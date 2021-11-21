@@ -178,9 +178,22 @@ void TCompiledHistograms::Fill(std::shared_ptr<TUnpackedEvent> detectors)
 
 void TCompiledHistograms::AddCutFile(TFile* cut_file)
 {
-   if(cut_file != nullptr) {
+  /* 
+  if(cut_file != nullptr) {
       fCut_files.push_back(cut_file);
    }
+  */
+   
+   if(cut_file) {
+    fCut_files.push_back(cut_file);
+    TIter iter(cut_file->GetListOfKeys());
+    while(TKey *key = (TKey*)iter.Next()) {
+      TObject *obj = key->ReadObj();
+      if(obj->InheritsFrom("TCutG"))
+        fGates.Add(obj);
+    }
+
+  }
 }
 
 void TCompiledHistograms::SetDefaultDirectory(TDirectory* dir)

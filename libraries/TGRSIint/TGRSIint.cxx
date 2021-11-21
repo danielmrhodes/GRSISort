@@ -516,6 +516,17 @@ void TGRSIint::SetupPipeline()
 		std::cerr<<"Reading from analysis tree not currently supported"<<std::endl;
 	}
 
+	std::vector<TFile*> cut_files;
+	for(auto filename : opt->InputCutFiles()) {
+	  TFile* tfile = OpenRootFile(filename);
+	  cut_files.push_back(tfile);
+	  std::cout << "loading cuts\n" << std::endl;
+	  //if(tfile && GUIIsRunning()){
+	  //TPython::Bind(tfile,"tdir");
+	  //ProcessLine("TPython::Exec(\"window.LoadCutFile(tdir)\");");
+	  //}
+	}
+
 	////////////////////////////////////////////////////
 	////////////  Setting up the loops  ////////////////
 	////////////////////////////////////////////////////
@@ -645,6 +656,11 @@ void TGRSIint::SetupPipeline()
 	// If requested, write the analysis histograms
 	if(write_analysis_histograms) {
 		TAnalysisHistLoop* loop = TAnalysisHistLoop::Get("7_analysis_hist_loop");
+		
+		for(auto cut_file : cut_files) {
+		  loop->AddCutFile(cut_file);
+		}
+
 		loop->SetOutputFilename(output_analysis_hist_filename);
 		if(detBuildingLoop != nullptr) {//TODO: This needs to be extended to being able to read from an analysis tree
 			loop->InputQueue() = detBuildingLoop->AddOutputQueue();
@@ -660,6 +676,7 @@ void TGRSIint::SetupPipeline()
 	// If requested, write the analysis tree
 	if(write_analysis_tree) {
 		TAnalysisWriteLoop* loop = TAnalysisWriteLoop::Get("8_analysis_write_loop", output_analysis_tree_filename);
+
 		loop->InputQueue()       = detBuildingLoop->AddOutputQueue(TGRSIOptions::Get()->AnalysisWriteQueueSize());
 		if(TGRSIOptions::Get()->SeparateOutOfOrder()) {
 			loop->OutOfOrderQueue() = eventBuildingLoop->OutOfOrderQueue();
