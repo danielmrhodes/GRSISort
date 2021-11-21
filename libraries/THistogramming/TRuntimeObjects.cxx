@@ -77,37 +77,53 @@ TH2* TRuntimeObjects::FillHistogramSym(const char* name, int Xbins, double Xlow,
 TDirectory* TRuntimeObjects::FillHistogram(const char* dirname, const char* name, int bins, double low, double high,
                                            double value, double weight)
 {
-   TDirectory * dir = FindDirectory(dirname);
 
-   TH1* hist = static_cast<TH1*>(dir->FindObject(name));
-   if(hist == nullptr) {
-      hist = new TH1D(name, name, bins, low, high);
-      hist->SetDirectory(dir);
-      dir->Add(hist);
-   }
+  TDirectory *dir = (TDirectory*)GetObjects().FindObject(dirname);
+  if(!dir){
+    dir = new TDirectory(dirname,dirname);
+    GetObjects().Add(dir);
+  }
+  dir->cd();
+  TH1* hist = (TH1*)dir->FindObject(name);
+  if(!hist){
+    hist = new TH1D(name,name,
+		    bins, low, high);
+    hist->SetDirectory(dir);
+  }
 
-   if(!std::isnan(value)) {
-      hist->Fill(value, weight);
-   }
-   return dir;
+  if(!std::isnan(value)) {
+    hist->Fill(value, weight);
+  }
+  dir->cd("../");
+
+  return dir;
 }
 
 TDirectory* TRuntimeObjects::FillHistogram(const char* dirname, const char* name, int Xbins, double Xlow, double Xhigh,
                                            double Xvalue, int Ybins, double Ylow, double Yhigh, double Yvalue,
                                            double weight)
 {
-   TDirectory * dir = FindDirectory(dirname);
-   TH2* hist = static_cast<TH2*>(dir->FindObject(name));
-   if(hist == nullptr) {
-      hist = new TH2D(name, name, Xbins, Xlow, Xhigh, Ybins, Ylow, Yhigh);
-      hist->SetDirectory(dir);
-      dir->Add(hist);
-   }
 
-   if(!std::isnan(Xvalue) && !std::isnan(Yvalue)) {
-      hist->Fill(Xvalue, Yvalue, weight);
-   }
-   return dir; 
+  TDirectory *dir = (TDirectory*)GetObjects().FindObject(dirname);
+  if(!dir){
+    dir = new TDirectory(dirname,dirname);
+    GetObjects().Add(dir);
+  }
+  dir->cd();
+  TH2* hist = (TH2*)dir->FindObject(name);
+  if(!hist){
+    hist = new TH2D(name,name,
+                            Xbins, Xlow, Xhigh,
+                            Ybins, Ylow, Yhigh);
+    hist->SetDirectory(dir);
+  }
+
+  if(!std::isnan(Xvalue) && !std::isnan(Yvalue)) {
+    hist->Fill(Xvalue, Yvalue, weight);
+  }
+  dir->cd("../");
+  return dir;
+
 }
 
 TDirectory* TRuntimeObjects::FillProfileHist(const char* dirname, const char* name, int Xbins, double Xlow,

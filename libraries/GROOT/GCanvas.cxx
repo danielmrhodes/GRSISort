@@ -32,6 +32,7 @@
 #include "GH2I.h"
 #include "GH2D.h"
 #include "GH1D.h"
+#include "GCutG.h"
 
 #include <iostream>
 #include <fstream>
@@ -1192,7 +1193,7 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
       }
       {
          static int cutcounter = 0;
-         auto*      cut        = new TCutG(Form("_cut%i", cutcounter++), 9);
+         GCutG*      cut        = new GCutG(Form("_cut%i", cutcounter++), 9);
          // cut->SetVarX("");
          // cut->SetVarY("");
          //
