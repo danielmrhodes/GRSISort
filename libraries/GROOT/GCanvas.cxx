@@ -843,15 +843,15 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
 
    case kKey_l:
      this->Clear();
-    hists.at(0)->Draw("hist");
-    for(unsigned int i=1;i<hists.size();i++) {
-      hists.at(i)->Draw("histsame");
-    }
-    SetLogy(!GetLogy());
-    edited=true;
-    break;
+     hists.at(0)->Draw("hist");
+     for(unsigned int i=1;i<hists.size();i++) {
+       hists.at(i)->Draw("histsame");
+     }
+     SetLogy(!GetLogy());
+     edited=true;
+     break;
 
-    case kKey_L:
+   case kKey_L:
     {
       TIter iter(this->GetListOfPrimitives());
       while(TObject *obj = iter.Next()) {
@@ -1487,14 +1487,19 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
      break;
 
    case kKey_l:
-     this->Clear();
-     hists.at(0)->Draw("colz");
-     for(unsigned int i=1;i<hists.size();i++) {
-       hists.at(i)->Draw("same colz");
-     }
-     SetLogz(!GetLogz());
-     edited=true;
-     break;
+     {
+      this->SetLogz(!this->GetLogz());
+      gPad->Update();
+      TIter iter(this->GetListOfPrimitives());
+      while(TObject *obj = iter.Next()) {
+	if(obj->InheritsFrom(TPad::Class())) {
+	  TPad *pad = (TPad*)obj;
+	  pad->SetLogz(!pad->GetLogz());
+	}
+      }
+    }
+    edited = true;
+    break;
 
    case kKey_m:
     {
