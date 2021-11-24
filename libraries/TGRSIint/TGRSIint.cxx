@@ -32,6 +32,7 @@
 #include "TInterpreter.h"
 #include "TGHtmlBrowser.h"
 //#include <pstream.h>
+#include "TPython.h"
 
 #include <thread>
 #include <utility>
@@ -729,6 +730,13 @@ void TGRSIint::LoadGROOTGraphics()
 	// force Canvas to load, this ensures global GUI Factory ptr exists.
 	gROOT->LoadClass("TCanvas", "Gpad");
 	gGuiFactory = new GRootGuiFactory();
+}
+
+void TGRSIint::LoadGCutG(GCutG* cutg) {
+  if(GUIIsRunning()) {
+    TPython::Bind(cutg, "cutg");
+    ProcessLine("TPython::Exec(\"window.LoadCutG(cutg)\");");
+  }
 }
 
 void TGRSIint::PrintHelp(bool print)

@@ -32,6 +32,7 @@
 #include "TEnv.h"
 #include "TFile.h"
 #include "TStopwatch.h"
+#include "GCutG.h"
 
 #include "Globals.h"
 #include "TRawFile.h"
@@ -59,6 +60,7 @@ public:
    TFile* OpenRootFile(const std::string& filename, Option_t* opt = "read");
    TRawFile* OpenRawFile(const std::string& filename);
    void RunMacroFile(const std::string& filename);
+   void LoadGCutG(GCutG* cutg);
 
    void Terminate(Int_t status = 0) override;
 
