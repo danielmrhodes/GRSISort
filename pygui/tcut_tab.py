@@ -99,6 +99,9 @@ class TCutTab(object):
         for key in tfile.GetListOfKeys():
             if key.GetClassName()=='TCutG':
                 self.AddCut(key.ReadObj())
+            if key.GetClassName()=='GCutG':
+		obj = key.ReadObj()
+                self.AddCut(obj)  #key.ReadObj())
 
     def AddCut(self, cut, det_type = None):
         name = cut.GetName()
@@ -193,7 +196,7 @@ class TCutTab(object):
         self.tree.pack(fill=tk.BOTH,expand=True)
         self.tree.bind("<Double-1>",self.TreeView_OnDoubleClick)
 
-    def _draw_cut(self,cut):
+    def _draw_cut(self,tcut):
         tcut.Draw('same')
         if ROOT.gPad:
             ROOT.gPad.Modified()
