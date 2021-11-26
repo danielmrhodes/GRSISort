@@ -49,6 +49,12 @@ public:
 
    GH1D* ProjectionY(const char* name = "_py", int firstbin = 0, int lastbin = -1, Option_t* option = ""); // *MENU*
 
+   GH1D* ProjectionY_BG(const char *name, int xlowbin, int xhighbin, int xlowbgbin, int xhighbgbin,
+			double scale, Option_t *opt);
+   
+   GH1D* ProjectionX_BG(const char *name, int xlowbin, int xhighbin, int xlowbgbin, int xhighbgbin,
+			double scale, Option_t *opt);
+
    TH2* GetTH2() override { return this; }
 
 private:

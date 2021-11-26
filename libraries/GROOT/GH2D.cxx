@@ -132,3 +132,41 @@ GH1D* GH2D::ProjectionY(const char* name, int firstbin, int lastbin, Option_t* o
 {
    return GH2ProjectionY(name, firstbin, lastbin, option);
 }
+
+GH1D *GH2D::ProjectionX_BG(const char *name, int ylowbin, int yhighbin, int ylowbgbin, int yhighbgbin,
+			   double scale, Option_t *opt) {
+  
+  GH1D *add = ProjectionX("_px",ylowbin,yhighbin);
+  GH1D *sub = ProjectionX("_px",ylowbgbin,yhighbgbin);
+
+  if(scale>0)
+    scale*=-1;
+  
+  add->Add(sub,scale);
+
+  add->SetName(Form("%s_bg",add->GetName()));
+  add->SetTitle(Form("%s - %s",add->GetTitle(),sub->GetTitle()));
+
+  sub->Delete();
+  
+  return add;
+}
+
+GH1D *GH2D::ProjectionY_BG(const char *name, int xlowbin, int xhighbin, int xlowbgbin, int xhighbgbin,
+			  double scale, Option_t *opt) {
+  
+  GH1D *add = ProjectionY("_py",xlowbin,xhighbin);
+  GH1D *sub = ProjectionY("_py",xlowbgbin,xhighbgbin);
+  
+  if(scale>0)
+    scale*=-1;
+  
+  add->Add(sub,scale);
+  
+  add->SetName(Form("%s_bg",add->GetName()));
+  add->SetTitle(Form("%s - %s",add->GetTitle(),sub->GetTitle()));
+
+  sub->Delete();
+
+  return add;
+}

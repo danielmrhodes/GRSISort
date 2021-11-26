@@ -57,9 +57,12 @@ public:
    GH1D* GetPrevious(bool DrawEmpty = false) const;
    GH1D* GetNext(bool DrawEmpty = false) const;
 
-   GH1D* Project(double value_low, double value_high) const;
-   GH1D* Project_Background(double value_low, double value_high, double bg_value_low, double bg_value_high,
-                            EBackgroundSubtraction mode = EBackgroundSubtraction::kRegionBackground) const;
+   GH1D* Project(int bin_low, int bin_high) const;
+   GH1D* Project(int bin_low, int bin_high, int bg_bin_low, int bg_bin_high, double scale) const;
+   GH1D* Project_Background(double value_low, double value_high, double bg_value_low, 
+			    double bg_value_high,
+                            EBackgroundSubtraction mode = EBackgroundSubtraction::kRegionBackground) 
+     const;
 
 private:
    TRef parent;

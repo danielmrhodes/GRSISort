@@ -166,24 +166,41 @@ GH1D* GH1D::GetNext(bool DrawEmpty) const
    return nullptr;
 }
 
-GH1D* GH1D::Project(double value_low, double value_high) const
+GH1D* GH1D::Project(int low, int high) const
 {
 
-   if((parent.GetObject() != nullptr) && parent.GetObject()->InheritsFrom(GH2Base::Class()) && projection_axis != -1) {
-      if(value_low > value_high) {
-         std::swap(value_low, value_high);
-      }
-      GH2D* gpar = static_cast<GH2D*>(parent.GetObject());
-      if(projection_axis == 0) {
-         int bin_low  = gpar->GetXaxis()->FindBin(value_low);
-         int bin_high = gpar->GetXaxis()->FindBin(value_high);
-         return gpar->ProjectionY("_py", bin_low, bin_high);
-      }
-      int bin_low  = gpar->GetYaxis()->FindBin(value_low);
-      int bin_high = gpar->GetYaxis()->FindBin(value_high);
-      return gpar->ProjectionX("_px", bin_low, bin_high);
-   }
-   return nullptr;
+  if((parent.GetObject() == nullptr) || !(parent.GetObject()->InheritsFrom(GH2Base::Class())) || 
+     projection_axis == -1)
+    return nullptr;
+
+  if(low > high) {
+    std::swap(low,high);
+  }
+  
+  GH2D* gpar = static_cast<GH2D*>(parent.GetObject());
+  if(projection_axis == 0)
+    return gpar->ProjectionY("_py",low,high);
+  
+  return gpar->ProjectionX("_px",low,high);
+   
+}
+
+ GH1D* GH1D::Project(int low, int high, int bg_low, int bg_high, double scale) const
+{
+
+  if((parent.GetObject() == nullptr) || !(parent.GetObject()->InheritsFrom(GH2Base::Class())) || 
+     projection_axis == -1)
+    return nullptr;
+
+  if(low > high)
+    std::swap(low,high);
+  
+  GH2D* gpar = static_cast<GH2D*>(parent.GetObject());
+  if(projection_axis == 0)
+    return gpar->ProjectionY_BG("_py",low,high,bg_low,bg_high,scale,"keep+");
+  
+  return gpar->ProjectionX_BG("_px",low,high,bg_low,bg_high,scale,"keep+");
+   
 }
 
 GH1D* GH1D::Project_Background(double value_low, double value_high, double bg_value_low, double bg_value_high,

@@ -34,11 +34,11 @@ public:
    GH1D* ProjectionX_Background(int firstbin = 0, int lastbin = -1, int first_bg_bin = 0, int last_bg_bin = -1,
                                 EBackgroundSubtraction mode = EBackgroundSubtraction::kRegionBackground); // *MENU*
 
-   GH1D* GH2ProjectionX(const char* name = "_px", int firstbin = 0, int lastbin = -1, Option_t* option = "",
-                        bool KeepEmpty = false); // *MENU*
+   GH1D* GH2ProjectionX(const char* name = "_px", int firstbin = 0, int lastbin = -1, 
+			Option_t* option = "", bool keepEmpty = true); // *MENU*
 
-   GH1D* GH2ProjectionY(const char* name = "_py", int firstbin = 0, int lastbin = -1, Option_t* option = "",
-                        bool KeepEmpty = false); // *MENU*
+   GH1D* GH2ProjectionY(const char* name = "_py", int firstbin = 0, int lastbin = -1, 
+			Option_t* option = "", bool keepEmpty = true); // *MENU*
 
    GH1D* ProjectionY_Background(int firstbin = 0, int lastbin = -1, int first_bg_bin = 0, int last_bg_bin = -1,
                                 EBackgroundSubtraction mode = EBackgroundSubtraction::kRegionBackground); // *MENU*

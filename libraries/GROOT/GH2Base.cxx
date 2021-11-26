@@ -88,61 +88,58 @@ GH1D* GH2Base::Projection_Background(int axis, int firstbin, int lastbin, int fi
    return output;
 }
 
-GH1D* GH2Base::GH2ProjectionX(const char* name, int firstbin, int lastbin, Option_t* option, bool KeepEmpty)
+GH1D* GH2Base::GH2ProjectionX(const char* name, int firstbin, int lastbin, Option_t* option, 
+			      bool keepEmpty)
 {
-   std::string title;
-   double      xlow  = GetTH2()->GetYaxis()->GetBinLowEdge(firstbin);
-   double      xhigh = GetTH2()->GetYaxis()->GetBinUpEdge(lastbin);
-   bool        total = false;
-   if(firstbin == 0 && lastbin == -1) {
-      total = true;
-      title = Form("%s_totalx", GetTH2()->GetName());
-   } else {
-      title = Form("%s_projx_%d[%.02f]_%d[%.02f]", GetTH2()->GetName(), firstbin, xlow, lastbin, xhigh);
-   }
+  
+  std::string title;
+  double      xlow  = GetTH2()->GetYaxis()->GetBinLowEdge(firstbin);
+  double      xhigh = GetTH2()->GetYaxis()->GetBinUpEdge(lastbin);
+  bool        total = false;
+  if(firstbin == 0 && lastbin == -1) {
+    total = true;
+    title = Form("%s_totalx", GetTH2()->GetName());
+  } else {
+    title = Form("%s_projx_%d[%.02f]_%d[%.02f]", GetTH2()->GetName(), firstbin, xlow, lastbin, xhigh);
+  }
 
-   std::string actual_name = name;
-   if(actual_name == "_px") {
-      if(total) {
-         actual_name = title;
-      } else {
-         actual_name = Form("%s_projx_%d_%d", GetTH2()->GetName(), firstbin, lastbin);
-      }
-   }
+  std::string actual_name = name;
+  if(actual_name == "_px") {
+    if(total) {
+      actual_name = title;
+    } else {
+      actual_name = Form("%s_projx_%d_%d", GetTH2()->GetName(), firstbin, lastbin);
+    }
+  }
 
-   GH1D* output = nullptr;
-   {
-      SuppressTH1GDirectory sup;
-      TH1D*                 proj = GetTH2()->ProjectionX("temp", firstbin, lastbin, option);
-      output                     = new GH1D(*proj);
-      proj->Delete();
-   }
+  GH1D* output = nullptr;
+  {
+    SuppressTH1GDirectory sup;
+    TH1D*                 proj = GetTH2()->ProjectionX("temp", firstbin, lastbin, option);
+    output                     = new GH1D(*proj);
+    proj->Delete();
+  }
 
-   output->SetName(actual_name.c_str());
-   output->SetTitle(title.c_str());
-   output->SetParent(GetTH2());
-   output->SetProjectionAxis(0);
-   output->SetDirectory(nullptr);
+  output->SetName(actual_name.c_str());
+  output->SetTitle(title.c_str());
+  output->SetParent(GetTH2());
+  output->SetProjectionAxis(0);
+  output->SetDirectory(nullptr);
 
-   if(fIsSummary) {
-      if(KeepEmpty || output->Integral() > 0) {
-         fSummaryProjections->Add(output);
-      }
-   } else {
-      if(KeepEmpty || output->Integral() > 0) {
-         fProjections->Add(output);
-      }
-   }
-   return output;
+  if(fIsSummary) {
+    if(keepEmpty || output->Integral() > 0) {
+      fSummaryProjections->Add(output);
+    }
+  } else {
+    if(keepEmpty || output->Integral() > 0) {
+      fProjections->Add(output);
+    }
+  }
+  return output;
 }
 
-GH1D* GH2Base::ProjectionX_Background(int firstbin, int lastbin, int first_bg_bin, int last_bg_bin,
-                                      EBackgroundSubtraction mode)
-{
-   return Projection_Background(0, firstbin, lastbin, first_bg_bin, last_bg_bin, mode);
-}
-
-GH1D* GH2Base::GH2ProjectionY(const char* name, int firstbin, int lastbin, Option_t* option, bool KeepEmpty)
+GH1D* GH2Base::GH2ProjectionY(const char* name, int firstbin, int lastbin, Option_t* option, 
+			      bool keepEmpty)
 {
    std::string title;
    double      ylow  = GetTH2()->GetXaxis()->GetBinLowEdge(firstbin);
@@ -179,15 +176,21 @@ GH1D* GH2Base::GH2ProjectionY(const char* name, int firstbin, int lastbin, Optio
    output->SetDirectory(nullptr);
 
    if(fIsSummary) {
-      if(KeepEmpty || output->Integral() > 0) {
+      if(keepEmpty || output->Integral() > 0) {
          fSummaryProjections->Add(output);
       }
    } else {
-      if(KeepEmpty || output->Integral() > 0) {
+      if(keepEmpty || output->Integral() > 0) {
          fProjections->Add(output);
       }
    }
    return output;
+}
+
+GH1D* GH2Base::ProjectionX_Background(int firstbin, int lastbin, int first_bg_bin, int last_bg_bin,
+                                      EBackgroundSubtraction mode)
+{
+   return Projection_Background(0, firstbin, lastbin, first_bg_bin, last_bg_bin, mode);
 }
 
 GH1D* GH2Base::ProjectionY_Background(int firstbin, int lastbin, int first_bg_bin, int last_bg_bin,
