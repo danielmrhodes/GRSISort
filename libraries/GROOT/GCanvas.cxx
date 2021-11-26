@@ -1596,11 +1596,12 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
 	    break;
 	  }
 	}
-	names.push_back(name);
 	   
 	if(!good)
 	  continue;
-	   
+
+	names.push_back(name);
+
 	double sum = ((GCutG*)obj)->IntegralHist((TH2*)hists.at(0));
 	std::string tag = ((GCutG*)obj)->GetTag();
 	 
