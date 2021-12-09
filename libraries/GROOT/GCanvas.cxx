@@ -1572,7 +1572,6 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
       cut->SetLineColor(kBlack);
       hists.at(0)->GetListOfFunctions()->Add(cut);
 
-      // TODO: Bring this back once we have pulled in parts of TGRUTint
       TGRSIint::instance()->LoadGCutG(cut);
     }
     edited = true;
