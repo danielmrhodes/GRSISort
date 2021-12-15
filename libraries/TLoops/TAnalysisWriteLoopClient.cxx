@@ -127,11 +127,12 @@ void TAnalysisWriteLoopClient::AddBranch(TClass* cls)
 		for(int i = 0; i < fEventTree->GetEntries(); i++) {
 			newBranch->Fill();
 		}
-
+		
 		if(fFirstClient) {
-			std::cout<<"\r"<<std::string(30, ' ')<<"\r"<<Name()<<": added \""<<cls->GetName()<<R"(" branch)"<<std::endl;
+			std::cout <<"\r"<<std::string(30, ' ') <<"\r"<<Name() <<": added \"" 
+				  << cls->GetName() << R"(" branch)" << std::endl;
 		}
-
+		
 		// Unlock after we are done.
 		TThread::UnLock();
 	}
