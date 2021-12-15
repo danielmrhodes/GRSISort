@@ -62,6 +62,12 @@ public:
 	virtual TDetectorHit* GetHit(const int&) const;
 	virtual const std::vector<TDetectorHit*>& GetHitVector() const { return fHits; }
 
+	//void SetBuilt(bool is_built) {built = is_built;}
+	//bool IsBuilt() {return built;}
+
+	//private:
+	//bool built;
+
 protected:
 	std::vector<TDetectorHit*> fHits;
 

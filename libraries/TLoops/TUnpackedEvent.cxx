@@ -48,6 +48,7 @@ void TUnpackedEvent::BuildHits()
 {
    for(const auto& det : fDetectors) {
       det->BuildHits();
+      //det->SetBuilt(true);
    }
 }
 
