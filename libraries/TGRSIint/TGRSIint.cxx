@@ -20,6 +20,7 @@
 #include "TFragHistLoop.h"
 #include "TFragWriteLoop.h"
 #include "TFragmentChainLoop.h"
+#include "TAnalysisChainLoop.h"
 #include "TTerminalLoop.h"
 #include "TUnpackingLoop.h"
 #include "TPPG.h"
@@ -513,19 +514,15 @@ void TGRSIint::SetupPipeline()
 		}
 	}
 
-	if(read_from_analysis_tree) {
-		std::cerr<<"Reading from analysis tree not currently supported"<<std::endl;
-	}
-
 	std::vector<TFile*> cut_files;
 	for(auto filename : opt->InputCutFiles()) {
 	  TFile* tfile = OpenRootFile(filename);
 	  cut_files.push_back(tfile);
 	  std::cout << "loading cuts\n" << std::endl;
-	  //if(tfile && GUIIsRunning()){
-	  //TPython::Bind(tfile,"tdir");
-	  //ProcessLine("TPython::Exec(\"window.LoadCutFile(tdir)\");");
-	  //}
+	  if(tfile && GUIIsRunning()){
+	    TPython::Bind(tfile,"tdir");
+	    ProcessLine("TPython::Exec(\"window.LoadCutFile(tdir)\");");
+	  }
 	}
 
 	////////////////////////////////////////////////////
@@ -560,6 +557,7 @@ void TGRSIint::SetupPipeline()
 	TFragmentChainLoop* fragmentChainLoop = nullptr;
 	TEventBuildingLoop* eventBuildingLoop = nullptr;
 	TDetBuildingLoop*   detBuildingLoop   = nullptr;
+	TAnalysisChainLoop* analysisChainLoop = nullptr;
 
 	// If needed, read from the raw file
 	if(read_from_raw) {
@@ -575,9 +573,14 @@ void TGRSIint::SetupPipeline()
 	}
 
 	// If needed, read from the fragment tree
-	if(read_from_fragment_tree) {
-		fragmentChainLoop = TFragmentChainLoop::Get("1_chain_loop", gFragment);
+	else if(read_from_fragment_tree) {
+		fragmentChainLoop = TFragmentChainLoop::Get("1_chain_loop",gFragment);
 		fragmentChainLoop->SetSelfStopping(self_stopping);
+	}
+
+	else if(read_from_analysis_tree) {
+	  analysisChainLoop = TAnalysisChainLoop::Get("1_analysis_loop",gAnalysis);
+	  analysisChainLoop->SetSelfStopping(self_stopping);
 	}
 
 	// if I am passed any calibrations, lets load those, this
@@ -664,11 +667,11 @@ void TGRSIint::SetupPipeline()
 
 		loop->SetOutputFilename(output_analysis_hist_filename);
 		if(detBuildingLoop != nullptr) {//TODO: This needs to be extended to being able to read from an analysis tree
-			loop->InputQueue() = detBuildingLoop->AddOutputQueue();
+		  loop->InputQueue() = detBuildingLoop->AddOutputQueue();
 		} else {
-			std::cerr<<DRED<<"Error, writing analysis histograms is enabled, but no detector building loop was found!"
-				<<RESET_COLOR<<std::endl;
-			exit(1);
+		  //std::cerr<< DRED <<"Error, writing analysis histograms is enabled, but no detector building loop was found!" << RESET_COLOR<<std::endl;
+		  //exit(1);
+		  loop->InputQueue() = analysisChainLoop->OutputQueue();
 		}
 
 		analysisQueues.push_back(loop->InputQueue());
