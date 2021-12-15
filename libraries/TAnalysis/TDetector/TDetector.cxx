@@ -6,7 +6,7 @@ ClassImp(TDetector)
 /// \endcond
 
 TDetector::TDetector()
-   : TObject()
+: TObject()//, built(false)
 {
    /// Default constructor.
 #if MAJOR_ROOT_VERSION < 6
