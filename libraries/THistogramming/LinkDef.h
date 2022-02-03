@@ -1,4 +1,4 @@
-// TFragHistLoop.h TCompiledHistograms.h TRuntimeObjects.h TAnalysisHistLoop.h
+// TFragHistLoop.h TCompiledHistograms.h TCompiledFilter.h TRuntimeObjects.h TAnalysisHistLoop.h
 
 #ifdef __CINT__
 
@@ -8,6 +8,7 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ class TCompiledHistograms+;
+#pragma link C++ class TCompiledFilter+;
 #pragma link C++ class TRuntimeObjects+;
 #pragma link C++ class TFragHistLoop+;
 #pragma link C++ class TAnalysisHistLoop+;

@@ -518,13 +518,18 @@ bool TGRSIOptions::FileAutoDetect(const std::string& filename)
          fAnalysisHistogramLib = filename;
          used                  = true;
       }
+      if (lib.GetSymbol("FilterCondition")) {
+	fCompiledFilterFile = filename;
+	used = true;
+      }
       if(lib.GetSymbol("CreateParser") != nullptr && lib.GetSymbol("DestroyParser") != nullptr &&
 			lib.GetSymbol("CreateFile")   != nullptr && lib.GetSymbol("DestroyFile")   != nullptr) {
          fParserLibrary        = filename;
          used                  = true;
       }
       if(!used) {
-         std::cerr<<filename<<" did not contain MakeFragmentHistograms() or MakeAnalysisHistograms()"<<std::endl;
+         std::cerr<<filename<<" did not contain MakeFragmentHistograms() or MakeAnalysisHistograms()"
+		  << " or FilterCondition()" << std::endl;
       }
       return true;
    }
