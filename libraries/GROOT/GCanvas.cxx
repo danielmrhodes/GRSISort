@@ -787,7 +787,9 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     break;
 
   case kKey_g:
-    if(GausFit(hists.back(), fMarkers.at(fMarkers.size() - 2)->GetLocalX(), fMarkers.back()->GetLocalX()) != nullptr) {
+    hists.back()->GetListOfFunctions()->Clear();
+    if(GausFit(hists.back(),fMarkers.at(fMarkers.size() - 2)->GetLocalX(),fMarkers.back()->GetLocalX()) != nullptr) {
+      hists.back()->Draw();
       edited = true;
     }
     break;
@@ -808,6 +810,23 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
       edited = DoubleGausFit(hists.back(),xvalues.at(1),xvalues.at(2),xvalues.at(0),xvalues.at(3));
       hists.back()->Draw();
     }
+    break;
+
+  case kKey_h: {
+    this->Clear();
+    RemoveMarker("all");
+    RemovePeaks(hists.data(),hists.size());
+    hists.at(0)->Draw("hist");
+    for(unsigned int i=1;i<hists.size();i++) {
+      hists.at(i)->Draw("histsame");
+    }
+    for(unsigned int i=0;i<hists.size();i++) {
+      for(const auto&& func : *(hists.at(i)->GetListOfFunctions())) {
+	func->Draw("same");
+      }
+    }
+    edited=true;
+  }
     break;
 
   case kKey_i: {
@@ -865,24 +884,14 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     this->Clear();
     RemoveMarker("all");
     RemovePeaks(hists.data(),hists.size());
-    hists.at(0)->Draw("hist");
+    hists.at(0)->Draw();
     for(unsigned int i=1;i<hists.size();i++) {
-      hists.at(i)->Draw("histsame");
+      hists.at(i)->Draw("same");
     }
     edited=true;
     break;
    
   case kKey_N:
-    this->Clear();
-    RemoveMarker("all");
-    RemovePeaks(hists.data(),hists.size());
-    hists.at(0)->GetListOfFunctions()->Clear();
-    hists.at(0)->Draw("hist");
-    for(unsigned int i=1;i<hists.size();i++) {
-      hists.at(i)->GetListOfFunctions()->Clear();
-      hists.at(i)->Draw("histsame");
-    }
-    edited=true;
     break;
 
   case kKey_o:
@@ -1200,7 +1209,18 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     edited = true;
     break;
 
-  case kKey_x:
+  case kKey_x: {
+    this->Clear();
+    RemoveMarker("all");
+    RemovePeaks(hists.data(),hists.size());
+    hists.at(0)->GetListOfFunctions()->Clear();
+    hists.at(0)->Draw("hist");
+    for(unsigned int i=1;i<hists.size();i++) {
+      hists.at(i)->GetListOfFunctions()->Clear();
+      hists.at(i)->Draw("histsame");
+    }
+    edited=true;
+  }
     break;
     
   case kKey_z: {

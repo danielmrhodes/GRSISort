@@ -48,7 +48,7 @@ bool GH1D::WriteDatFile(const char* outFile)
       return false;
    }
 
-   for(int i = 0; i < GetNbinsX(); i++) {
+   for(int i = 1; i < GetNbinsX() + 1; i++) {
       out<<GetXaxis()->GetBinCenter(i)<<"\t"<<GetBinContent(i)<<std::endl;
    }
    out<<std::endl;

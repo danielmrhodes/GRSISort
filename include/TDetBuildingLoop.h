@@ -36,6 +36,11 @@ public:
 
 #ifndef __CINT__
    std::shared_ptr<ThreadsafeQueue<std::vector<std::shared_ptr<const TFragment>>>>& InputQueue() { return fInputQueue; }
+   std::shared_ptr<ThreadsafeQueue<std::shared_ptr<TUnpackedEvent>>>& OutputQueue(unsigned int i) {
+     //if(i >= fOutputQueues.size())
+     //return std::shared_ptr<ThreadsafeQueue<std::shared_ptr<TUnpackedEvent>>>(NULL);
+     return fOutputQueues.at(i);
+   }
    std::shared_ptr<ThreadsafeQueue<std::shared_ptr<TUnpackedEvent>>>& AddOutputQueue(size_t maxSize = 50000)
    {
       std::stringstream name;
