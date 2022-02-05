@@ -15,6 +15,7 @@ Double_t StepFunction(Double_t* dim, Double_t* par);
 Double_t PhotoPeak(Double_t* dim, Double_t* par);
 Double_t PhotoPeakBG(Double_t* dim, Double_t* par);
 Double_t Gaus(Double_t* dim, Double_t* par);
+Double_t DoubleGaus(Double_t *dim, Double_t *par);
 Double_t SkewedGaus(Double_t* dim, Double_t* par);
 Double_t Efficiency(Double_t* dim, Double_t* par);
 

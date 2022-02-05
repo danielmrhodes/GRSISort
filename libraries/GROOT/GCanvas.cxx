@@ -787,6 +787,7 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     break;
 
   case kKey_g:
+    std::cout << "g" << std::endl;
     hists.back()->GetListOfFunctions()->Clear();
     if(GausFit(hists.back(),fMarkers.at(fMarkers.size() - 2)->GetLocalX(),fMarkers.back()->GetLocalX()) != nullptr) {
       hists.back()->Draw();
@@ -796,7 +797,8 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
 
   case kKey_G:
     hists.back()->GetListOfFunctions()->Clear();
-    if(!hists.back() || !fMarkers.size()==4) {
+    std::cout << "G" << fMarkers.size() << std::endl;
+    if(!hists.back() || !(fMarkers.size()==4)) {
       printf( CYAN "must have a a1 hist with 4 markers drawn" RESET_COLOR "\n");
     } else  {
       std::vector<double> xvalues;
@@ -892,6 +894,14 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     break;
    
   case kKey_N:
+    this->Clear();
+    RemoveMarker("all");
+    RemovePeaks(hists.data(),hists.size());
+    hists.at(0)->Draw("hist");
+    for(unsigned int i=1;i<hists.size();i++) {
+      hists.at(i)->Draw("hist same");
+    }
+    edited=true;
     break;
 
   case kKey_o:
@@ -1234,8 +1244,8 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     }
     else {
 
-      std::vector<std::string> colors = {"White","Black","Red","Green","Blue","Yellow","Pink","Cyan",
-					 "Dark Green","Purple"};
+      std::vector<std::string> colors = {"White","Black","Red","Green","Blue","Yellow","Pink",
+					 "Cyan","Dark Green","Purple"};
 
       unsigned int color = 1;
       for(TH1* h : hists) {

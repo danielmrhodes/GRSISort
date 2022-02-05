@@ -28,6 +28,7 @@
 #include <GPeak.h>
 #include "TPeak.h"
 #include <GGaus.h>
+#include <GDoubleGaus.h>
 #include <GH2D.h>
 #include <GH1D.h>
 #include <TGRSIOptions.h>
@@ -249,7 +250,7 @@ GGaus* GausFit(TH1* hist, double xlow, double xhigh, Option_t* opt)
 
    return mypeak;
 }
-
+/*
 TF1* DoubleGausFit(TH1* hist, double, double, double xlow, double xhigh, Option_t* opt)
 {
    if(hist == nullptr) {
@@ -271,6 +272,28 @@ TF1* DoubleGausFit(TH1* hist, double, double, double xlow, double xhigh, Option_
    // edit = true;
 
    return mypeak;
+}
+*/
+
+GDoubleGaus *DoubleGausFit(TH1 *hist,double cent1,double cent2,double xlow, double xhigh,Option_t *opt) {
+  if(!hist)
+    return 0;
+  if(xlow>xhigh)
+    std::swap(xlow,xhigh);
+
+  //std::cout << "here." << std::endl;
+
+  GDoubleGaus *mypeak= new GDoubleGaus(cent1,cent2,xlow,xhigh);
+  std::string options = opt;
+  options.append("Q+");
+  mypeak->Fit(hist,cent1,cent2,options.c_str());
+  
+  //mypeak->Background()->Draw("SAME");
+  //TF1 *bg = new TF1(*mypeak->Background());
+  //hist->GetListOfFunctions()->Add(bg);
+  //edit = true;
+
+  return mypeak;
 }
 
 GPeak* PhotoPeakFit(TH1* hist, double xlow, double xhigh, Option_t* opt)
