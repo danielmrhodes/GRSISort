@@ -49,8 +49,15 @@ public:
 #endif
 
    TH1* DrawNormalized(Option_t* opt = "", Double_t norm = 1) const override;
-
+   
+   GH1D* Calibrate(double slope, double offset = 0.0);
+   GH1D* Calibrate(std::vector<double> raw_vals, std::vector<double> cal_vals);
+  
    bool WriteDatFile(const char* outFile);
+   bool WriteDatFileError(const char* outFile);
+
+   static GH1D* ReadDatFile(const char* inFile, int nSkip = -1);
+   static GH1D* ReadDatFileError(const char* inFile, int nSkip = -1);
 
    GH1D* Project(int bins = -1);
 

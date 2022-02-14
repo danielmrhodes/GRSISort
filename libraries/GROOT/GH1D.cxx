@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <sstream>
 
 #include "TVirtualPad.h"
 #include "TString.h"
@@ -35,6 +36,58 @@ GH1D::GH1D(const TF1& function, Int_t nbinsx, Double_t xlow, Double_t xup)
    // f->Delete();
 }
 
+GH1D* GH1D::Calibrate(double m, double b) {
+
+  GH1D* htmp = (GH1D*)Clone(Form("%s_%s",GetName(),"cal"));
+  htmp->SetTitle(Form("%s_%s",GetTitle(),"cal"));
+  htmp->GetXaxis()->SetLimits(GetXaxis()->GetXmin()*m + b,GetXaxis()->GetXmax()*m + b);
+  
+  new GCanvas();
+  htmp->Draw("hist");
+
+  return htmp;
+  
+}
+
+GH1D* GH1D::Calibrate(std::vector<double> raw, std::vector<double> cal) {
+
+  int size = raw.size();
+  if(cal.size() != (unsigned int)size) {
+    std::cout << "Must be same number of raw values and calibrated values" << std::endl;
+    return (GH1D*)NULL;
+  }
+
+  double xmean = 0.0;
+  for(auto x : raw)
+    xmean += x;
+  xmean /= double(size);
+
+  double ymean = 0.0;
+  for(auto y : cal)
+    ymean += y;
+  ymean /= double(size);
+
+  double nume = 0.0;
+  double denom = 0.0;
+  for(int i=0;i<size;i++) {
+    nume += (raw.at(i) - xmean)*(cal.at(i) - ymean);
+    denom += TMath::Power(raw.at(i) - xmean,2.0);
+  }
+
+  double m = nume/denom;
+  double b = ymean - m*xmean;
+  
+  GH1D* htmp = (GH1D*)Clone(Form("%s_%s",GetName(),"cal1"));
+  htmp->SetTitle(Form("%s_%s",GetTitle(),"cal1"));
+  htmp->GetXaxis()->SetLimits(GetXaxis()->GetXmin()*m + b,GetXaxis()->GetXmax()*m + b);
+  
+  new GCanvas();
+  htmp->Draw("hist");
+
+  return htmp;
+  
+}
+
 bool GH1D::WriteDatFile(const char* outFile)
 {
    if(strlen(outFile) < 1) {
@@ -48,13 +101,194 @@ bool GH1D::WriteDatFile(const char* outFile)
       return false;
    }
 
+   out << GetNbinsX() << "\t" << GetXaxis()->GetXmin() << "\t" << GetXaxis()->GetXmax() << std::endl;
    for(int i = 1; i < GetNbinsX() + 1; i++) {
-      out<<GetXaxis()->GetBinCenter(i)<<"\t"<<GetBinContent(i)<<std::endl;
+      out << GetBinContent(i) << std::endl;
    }
    out<<std::endl;
    out.close();
 
    return true;
+}
+
+bool GH1D::WriteDatFileError(const char* outFile)
+{
+   if(strlen(outFile) < 1) {
+      return false;
+   }
+
+   std::ofstream out;
+   out.open(outFile);
+
+   if(!(out.is_open())) {
+      return false;
+   }
+
+   out << GetNbinsX() << "\t" << GetXaxis()->GetXmin() << "\t" << GetXaxis()->GetXmax() << std::endl;
+   for(int i = 1; i < GetNbinsX() + 1; i++) {
+      out << GetBinContent(i) << "\t" << GetBinError(i) << std::endl;
+   }
+   out<<std::endl;
+   out.close();
+
+   return true;
+}
+
+GH1D* GH1D::ReadDatFile(const char* inFile, int nSkip) {
+
+  GH1D* htmp = (GH1D*)NULL;
+  if(strlen(inFile) < 1) {
+      return htmp;
+   }
+
+   std::ifstream in;
+   in.open(inFile);
+
+   if(!(in.is_open())) {
+      return htmp;
+   }
+
+   std::string line;
+   if(nSkip > -1) { //Go to where the column of numbers starts, can be the first line (nSkip = 0)
+
+     for(int i=0;i<nSkip;i++) {
+       std::getline(in,line);
+     }
+
+     std::vector<double> vals;
+     while(std::getline(in,line)) {
+
+       double val;
+       std::stringstream ss(line);
+       ss >> val;
+       
+       vals.push_back(val);
+     }
+
+     int size = vals.size();
+     htmp = new GH1D(inFile,inFile,size,0,size);
+     
+     for(int i=0;i<size;i++) {
+       htmp->SetBinContent(i+1,vals.at(i));
+       htmp->SetBinError(i+1,TMath::Sqrt(TMath::Abs(vals.at(i))));
+     }
+   }
+   
+   else { //The first line is: nbins xlow xhigh. Next line is the column of numbers
+
+     std::getline(in,line);
+     std::stringstream ss1(line);
+
+     int nbins;
+     ss1 >> nbins;
+
+     double xlow;
+     ss1 >> xlow;
+
+     double xhigh;
+     ss1 >> xhigh;
+
+     htmp = new GH1D(inFile,inFile,nbins,xlow,xhigh);
+
+     int linenum = 1;
+     while(std::getline(in,line)) {
+
+       double val;
+       std::stringstream ss2(line);
+       ss2 >> val;
+       
+       htmp->SetBinContent(linenum,val);
+       htmp->SetBinError(linenum,TMath::Sqrt(TMath::Abs(val)));
+
+       linenum++;
+     }
+     
+   }
+   
+   return htmp;
+  
+}
+
+GH1D* GH1D::ReadDatFileError(const char* inFile, int nSkip) {
+
+  GH1D* htmp = (GH1D*)NULL;
+  if(strlen(inFile) < 1) {
+      return htmp;
+   }
+
+   std::ifstream in;
+   in.open(inFile);
+
+   if(!(in.is_open())) {
+      return htmp;
+   }
+
+   std::string line;
+   if(nSkip > -1) { //Go to where the columns of numbers and errors start, can be the first line (nSkip = 0)
+
+     for(int i=0;i<nSkip;i++) {
+       std::getline(in,line);
+     }
+
+     std::vector<double> vals;
+     std::vector<double> errs;
+     while(std::getline(in,line)) {
+
+       std::stringstream ss1(line);
+       
+       double val;
+       ss1 >> val;
+       vals.push_back(val);
+       
+       ss1 >> val;
+       errs.push_back(val);
+       
+     }
+
+     int size = vals.size();
+     htmp = new GH1D(inFile,inFile,size,0,size);
+     
+     for(int i=0;i<size;i++) {
+       htmp->SetBinContent(i+1,vals.at(i));
+       htmp->SetBinError(i+1,errs.at(i));
+     }
+   }
+   
+   else { //The first line is: nbins xlow xhigh. Next line is the column of numbers and errors
+
+     std::getline(in,line);
+     std::stringstream ss1(line);
+
+     int nbins;
+     ss1 >> nbins;
+
+     double xlow;
+     ss1 >> xlow;
+
+     double xhigh;
+     ss1 >> xhigh;
+    
+     htmp = new GH1D(inFile,inFile,nbins,xlow,xhigh);
+
+     int linenum = 1;
+     while(std::getline(in,line)) {
+
+       std::stringstream ss4(line);
+       
+       double val; 
+       ss4 >> val;
+       htmp->SetBinContent(linenum,val);
+
+       ss4 >> val;
+       htmp->SetBinError(linenum,val);
+
+       linenum++;
+     }
+     
+   }
+   
+   return htmp;
+  
 }
 
 /*
