@@ -357,10 +357,10 @@ std::string MergeStrings(const std::vector<std::string>& strings, char split)
    return ss.str();
 }
 
-TH1* GrabHist(int i)
+GH1D* GrabHist(int i)
 {
    // return the histogram from the current canvas, pad i.
-   TH1* hist = nullptr;
+   GH1D* hist = nullptr;
    if(!gPad) {
       return hist;
    }
@@ -369,7 +369,7 @@ TH1* GrabHist(int i)
    while(TObject* obj = iter.Next()) {
       if(obj->InheritsFrom(TH1::Class())) {
          if(j == i) {
-            hist = static_cast<TH1*>(obj);
+            hist = static_cast<GH1D*>(obj);
             break;
          }
          j++;

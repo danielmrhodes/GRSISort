@@ -45,7 +45,7 @@ void Prompt();
 void Help();
 void Commands();
 void Version();
-TH1* GrabHist(int i = 0); // return the ith histogram from the current canvas.
+GH1D* GrabHist(int i = 0); // return the ith histogram from the current canvas.
 TF1* GrabFit(int i = 0);  // return the ith fit from the current canvas.
 
 void StartGUI();

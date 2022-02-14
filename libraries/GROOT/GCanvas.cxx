@@ -820,7 +820,7 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     RemovePeaks(hists.data(),hists.size());
     hists.at(0)->Draw("hist");
     for(unsigned int i=1;i<hists.size();i++) {
-      hists.at(i)->Draw("histsame");
+      hists.at(i)->Draw("hist same");
     }
     for(unsigned int i=0;i<hists.size();i++) {
       for(const auto&& func : *(hists.at(i)->GetListOfFunctions())) {
@@ -1257,7 +1257,7 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
 
 	h->SetLineColor(color);
 	
-	std::cout << "Hist " << h->GetName() << ": ";
+	std::cout << "\nHist " << h->GetName() << ": ";
 	if(color < 10) 
 	  std::cout << colors.at(color) << std::endl;
 	else 
