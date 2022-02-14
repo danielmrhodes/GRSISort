@@ -1703,6 +1703,7 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
 	}
       }
     }
+    edited=true;
     break;
 
   case kKey_M:
@@ -1727,6 +1728,7 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
 	}
       }
     }
+    edited=true;
     break;
 
   case kKey_n:
@@ -1832,6 +1834,33 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
       }
       break;
     */
+
+  case kKey_s:
+    {
+
+      hists.back()->SetDrawOption("scat");
+
+      TIter iter(this->GetListOfPrimitives());
+      while(TObject *obj = iter.Next()) {
+	if(obj->InheritsFrom(TPad::Class())) {
+	  TPad *pad = (TPad*)obj;
+	  pad->cd();
+	  TIter iter2(pad->GetListOfPrimitives());
+	  while(TObject *obj2=iter2.Next()) {
+	    if(obj2->InheritsFrom(TH1::Class())) {
+	      TH1* hist = (TH1*)obj2;
+	      hist->SetDrawOption("scat");
+	      pad->Modified();
+	      pad->Update();
+	    }
+	  }
+	}
+      }
+      
+    }
+    edited=true;
+    break;
+    
   case kKey_x: {
     GH2D* ghist = nullptr;
     for(auto hist : hists) {
@@ -1918,7 +1947,27 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
     }
   } break;
    
-  case kKey_z:
+  case kKey_z: {
+    hists.back()->SetDrawOption("colz");
+
+    TIter iter(this->GetListOfPrimitives());
+    while(TObject *obj = iter.Next()) {
+      if(obj->InheritsFrom(TPad::Class())) {
+	TPad *pad = (TPad*)obj;
+	pad->cd();
+	TIter iter2(pad->GetListOfPrimitives());
+	while(TObject *obj2=iter2.Next()) {
+	  if(obj2->InheritsFrom(TH1::Class())) {
+	    TH1* hist = (TH1*)obj2;
+	    hist->SetDrawOption("colz");
+	    pad->Modified();
+	    pad->Update();
+	  }
+	}
+      }
+    }
+  }
+    edited=true;
     break;
 
   };
