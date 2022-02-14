@@ -1232,6 +1232,31 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     edited=true;
   }
     break;
+
+  case kKey_X: {
+    
+    RemoveMarker("all");
+    RemovePeaks(hists.data(),hists.size());
+    
+    TIter iter(this->GetListOfPrimitives());
+    while(TObject *obj = iter.Next()) {
+      if(obj->InheritsFrom(TPad::Class())) {
+	TPad *pad = (TPad*)obj;
+	TIter iter2(pad->GetListOfPrimitives());
+	while(TObject *obj2=iter2.Next()) {
+	  if(obj2->InheritsFrom(TH1::Class())) {
+	    GH1D* hist = (GH1D*)obj2;
+	    hist->GetListOfFunctions()->Clear();
+	    //hist->Draw("histsame");
+	    pad->Modified();
+	    pad->Update();
+	  }
+	}
+      }
+    } 
+  }
+    edited=true;
+    break;
     
   case kKey_z: {
     if(hists.size() == 1) {
