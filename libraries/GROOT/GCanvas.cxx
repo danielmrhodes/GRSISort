@@ -787,7 +787,6 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     break;
 
   case kKey_g:
-    std::cout << "g" << std::endl;
     hists.back()->GetListOfFunctions()->Clear();
     if(GausFit(hists.back(),fMarkers.at(fMarkers.size() - 2)->GetLocalX(),fMarkers.back()->GetLocalX()) != nullptr) {
       hists.back()->Draw();
@@ -797,7 +796,6 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
 
   case kKey_G:
     hists.back()->GetListOfFunctions()->Clear();
-    std::cout << "G" << fMarkers.size() << std::endl;
     if(!hists.back() || !(fMarkers.size()==4)) {
       printf( CYAN "must have a a1 hist with 4 markers drawn" RESET_COLOR "\n");
     } else  {
@@ -829,6 +827,34 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
     }
     edited=true;
   }
+    break;
+
+  case kKey_H: {
+    hists.back()->SetDrawOption("hist");
+
+    TIter iter(this->GetListOfPrimitives());
+    while(TObject *obj = iter.Next()) {
+      if(obj->InheritsFrom(TPad::Class())) {
+	TPad *pad = (TPad*)obj;
+	pad->cd();
+	TIter iter2(pad->GetListOfPrimitives());
+	while(TObject *obj2=iter2.Next()) {
+	  if(obj2->InheritsFrom(TH1::Class())) {
+	    
+	    TH1* hist = (TH1*)obj2;
+	    hist->SetDrawOption("hist");
+
+	    for(const auto&& func : *(hist->GetListOfFunctions()))
+	      func->Draw("same");
+	
+	    pad->Modified();
+	    pad->Update();
+	  }
+	}
+      }
+    }
+  }
+    edited=true;
     break;
 
   case kKey_i: {
@@ -1247,7 +1273,6 @@ bool GCanvas::Process1DKeyboardPress(Event_t*, UInt_t* keysym)
 	  if(obj2->InheritsFrom(TH1::Class())) {
 	    GH1D* hist = (GH1D*)obj2;
 	    hist->GetListOfFunctions()->Clear();
-	    //hist->Draw("histsame");
 	    pad->Modified();
 	    pad->Update();
 	  }
@@ -1467,16 +1492,13 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
     break;
 
   case kKey_c:
-    {
-      std::cout << "Rebinning All X!!" << std::endl;
+    { 
       int xbins_before = hists.back()->GetNbinsX();
       GetContextMenu()->Action(hists.back(),hists.back()->Class()->GetMethodAny("RebinX"));
       int xbins_after  = hists.back()->GetNbinsX();
       int bin_factor = xbins_before/xbins_after;
-   
+      
       TH1 *start = hists.back();
-
-      printf("rebinning all hists by %i\n",bin_factor);
 
       TIter iter(this->GetListOfPrimitives());
       while(TObject *obj = iter.Next()) {
@@ -1500,15 +1522,12 @@ bool GCanvas::Process2DKeyboardPress(Event_t*, UInt_t* keysym)
 
   case kKey_C:
     {
-      std::cout << "Rebinning All Y!!" << std::endl;
       int xbins_before = hists.back()->GetNbinsY();
       GetContextMenu()->Action((GH2D*)hists.back(),((GH2D*)hists.back())->Class()->GetMethodAny("RebinY"));
       int xbins_after  = hists.back()->GetNbinsY();
       int bin_factor = xbins_before/xbins_after;
    
       TH1 *start = hists.back();
-
-      printf("rebinning all hists by %i\n",bin_factor);
 
       TIter iter(this->GetListOfPrimitives());
       while(TObject *obj = iter.Next()) {
