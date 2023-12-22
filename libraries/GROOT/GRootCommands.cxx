@@ -229,25 +229,16 @@ bool RemovePeaks(TH1** hists, unsigned int nhists)
 
 GGaus* GausFit(TH1* hist, double xlow, double xhigh, Option_t* opt)
 {
-   // bool edit = false;
-   if(hist == nullptr) {
+  
+   if(hist == nullptr)
       return nullptr;
-   }
-   if(xlow > xhigh) {
+   
+   if(xlow > xhigh)
       std::swap(xlow, xhigh);
-   }
 
-   // std::cout<<"here."<<std::endl;
-
-   auto*       mypeak  = new GGaus(xlow, xhigh);
-   std::string options = opt;
-   options.append("Q+");
-   mypeak->Fit(hist, options.c_str());
-   // mypeak->Background()->Draw("SAME");
-   auto* bg = new TF1(*mypeak->Background());
-   hist->GetListOfFunctions()->Add(bg);
-   // edit = true;
-
+   GGaus* mypeak  = new GGaus(xlow, xhigh);
+   mypeak->Fit(hist,opt);
+   
    return mypeak;
 }
 /*
@@ -309,12 +300,10 @@ GPeak* PhotoPeakFit(TH1* hist, double xlow, double xhigh, Option_t* opt)
    // std::cout<<"here."<<std::endl;
 
    auto*       mypeak  = new GPeak((xlow + xhigh) / 2.0, xlow, xhigh);
-   std::string options = opt;
-   options.append("Q+");
-   mypeak->Fit(hist, options.c_str());
+   mypeak->Fit(hist, opt);
    // mypeak->Background()->Draw("SAME");
-   auto* bg = new TF1(*mypeak->Background());
-   hist->GetListOfFunctions()->Add(bg);
+   //auto* bg = new TF1(*mypeak->Background());
+   //hist->GetListOfFunctions()->Add(bg);
    // edit = true;
 
    return mypeak;

@@ -35,8 +35,9 @@ GPeak::GPeak(Double_t cent, Double_t xlow, Double_t xhigh, Option_t*)
    }
 
    TF1::SetRange(xlow, xhigh);
-
-   fBGFit.SetNpx(1000);
+   TF1::SetNpx(10000);
+   
+   fBGFit.SetNpx(10000);
    fBGFit.SetLineStyle(2);
    fBGFit.SetLineColor(kBlack);
 
@@ -268,47 +269,70 @@ Bool_t GPeak::Fit(TH1* fithist, Option_t* opt)
       return false;
    }
    TString options = opt;
-	options.ToLower();
+   options.ToLower();
    if(!IsInitialized()) {
       InitParams(fithist);
    }
    TVirtualFitter::SetMaxIterations(100000);
 
    bool verbose = !options.Contains("q");
-	bool retryFit = options.Contains("retryfit");
+   bool noprint = options.Contains("no-print");
+   if(noprint) {
+      options.ReplaceAll("no-print", "");
+      verbose = false;
+   }
+   
+   bool retryFit = options.Contains("retryfit");
    options.ReplaceAll("retryfit", "");
 
    if(fithist->GetSumw2()->fN != fithist->GetNbinsX() + 2) {
       fithist->Sumw2();
    }
 
-   TFitResultPtr fitres = fithist->Fit(this, Form("%sLRS", options.Data()));
+   TFitResultPtr fitres = fithist->Fit(this, Form("%sQLRSE", options.Data()));
 
-   if(verbose) printf("chi^2/NDF = %.02f\n", GetChisquare() / static_cast<double>(GetNDF()));
+   if(verbose && !noprint)
+     printf("chi^2/NDF = %.02f\n", GetChisquare() / static_cast<double>(GetNDF()));
 
    if(!fitres.Get()->IsValid()) {
-      printf(RED "fit has failed, trying refit... " RESET_COLOR);
-      fithist->GetListOfFunctions()->Last()->Delete();
-      fitres = fithist->Fit(this, Form("%sLRSME", options.Data()));
+     if(!noprint)
+       printf(RED "fit has failed, trying refit... " RESET_COLOR);
+     
+     fithist->GetListOfFunctions()->Last()->Delete();
+     fitres = fithist->Fit(this, Form("%sQLRSME", options.Data()));
+     
       if(fitres.Get()->IsValid()) {
-         printf(DGREEN " refit passed!" RESET_COLOR "\n");
-      } else {
-         printf(DRED " refit also failed :( " RESET_COLOR "\n");
+	if(!noprint)
+	  printf(DGREEN " refit passed!" RESET_COLOR "\n");
+      }
+      else {
+	if(!noprint)
+	  printf(DRED " refit also failed :( " RESET_COLOR "\n");
       }
    }
 
    // check parameter errors and re-try using minos instead of minuit
    if(!TGRSIFunctions::CheckParameterErrors(fitres)) {
-      std::cout<<YELLOW<<"Re-fitting with \"E\" option to get better error estimation using Minos technique."<<RESET_COLOR<<std::endl;
-      fitres = fithist->Fit(this, Form("%sLRSME", options.Data()));
+     if(!noprint)
+       std::cout<<YELLOW
+		<<"Re-fitting with \"E\" option to get better error estimation using Minos technique."
+		<<RESET_COLOR<<std::endl;
+      
+      fitres = fithist->Fit(this, Form("%sQLRSME", options.Data()));
    }
+   
    // check the parameter errors again and see if we need to fit again with all parameters released
    if(!TGRSIFunctions::CheckParameterErrors(fitres, "q") && retryFit) {
-      std::cout<<GREEN<<"Re-fitting with released parameters (without any limits):"<<RESET_COLOR<<std::endl;
+     
+     if(!noprint)
+       std::cout<<GREEN<<"Re-fitting with released parameters (without any limits):"
+		<<RESET_COLOR<<std::endl;
+     
       for(int i = 0; i < GetNpar(); ++i) {
          ReleaseParameter(i);
       }
-      fitres = fithist->Fit(this, Form("%sLRSM", options.Data()));
+      
+      fitres = fithist->Fit(this, Form("%sQLRSM", options.Data()));
       TGRSIFunctions::CheckParameterErrors(fitres);
    }
 
@@ -351,9 +375,9 @@ Bool_t GPeak::Fit(TH1* fithist, Option_t* opt)
    GPeak* tmppeak = new GPeak;
    Copy(*tmppeak);
    tmppeak->SetParameter("step", 0.0);
-   tmppeak->SetParameter("A", 0.0);
-   tmppeak->SetParameter("B", 0.0);
-   tmppeak->SetParameter("C", 0.0);
+   //tmppeak->SetParameter("A", 0.0);
+   //tmppeak->SetParameter("B", 0.0);
+   //tmppeak->SetParameter("C", 0.0);
    tmppeak->SetParameter("bg_offset", 0.0);
    tmppeak->SetRange(range_low, range_high); // This will help get the true area of the gaussian 200 ~ infinity in a gaus
    tmppeak->SetName("tmppeak");
@@ -366,8 +390,9 @@ Bool_t GPeak::Fit(TH1* fithist, Option_t* opt)
 
    delete tmppeak;
 
-	// always print the results of the fit even if not verbose
-	Print();
+   // print the results of the fit even if not verbose
+   if(!noprint)
+     Print();
 
    Copy(*fithist->GetListOfFunctions()->FindObject(GetName()));
    fithist->GetListOfFunctions()->Add(fBGFit.Clone());

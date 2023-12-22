@@ -19,6 +19,7 @@ GGaus::GGaus(Double_t xlow, Double_t xhigh, Option_t*)
    }
 
    TF1::SetRange(xlow, xhigh);
+   TF1::SetNpx(10000);
 
    fBGFit.SetNpx(1000);
    fBGFit.SetLineStyle(2);
@@ -127,39 +128,44 @@ bool GGaus::InitParams(TH1* fithist)
 
    Int_t binlow  = fithist->GetXaxis()->FindBin(xlow);
    Int_t binhigh = fithist->GetXaxis()->FindBin(xhigh);
-
-   Double_t highy = fithist->GetBinContent(binlow);
-   Double_t lowy  = fithist->GetBinContent(binhigh);
+   fNdf = binhigh - binlow - 5;
+   
+   double x1 = fithist->GetBinLowEdge(binlow);
+   double x2 = fithist->GetBinLowEdge(binhigh+1);
+   SetRange(x1,x2);
+   
+   /*
+   Double_t y1 = fithist->GetBinContent(binlow);
+   Double_t y2  = fithist->GetBinContent(binhigh);
    for(int x = 1; x < 5; x++) {
-      highy += fithist->GetBinContent(binlow - x);
-      lowy += fithist->GetBinContent(binhigh + x);
+      y1 += fithist->GetBinContent(binlow - x);
+      y2 += fithist->GetBinContent(binhigh + x);
    }
-   highy = highy / 5.0;
-   lowy  = lowy / 5.0;
+   y1 = y1 / 5.0;
+   y2  = y2 / 5.0;
 
-   if(lowy > highy) {
-      std::swap(lowy, highy);
-   }
-
+   double slope_guess = (y2-y1)/(x2-x1);
+   double offset_guess = y1 - slope_guess*x1;
+   */
+   
    double largestx = 0.0;
    double largesty = 0.0;
-   int    i        = binlow;
-   for(; i <= binhigh; i++) {
+   for(int i = binlow; i <= binhigh; i++) {
       if(fithist->GetBinContent(i) > largesty) {
          largesty = fithist->GetBinContent(i);
          largestx = fithist->GetXaxis()->GetBinCenter(i);
       }
-   }
-
+   } 
+   
    // - par[0]: height of peak
    // - par[1]: cent of peak
    // - par[2]: sigma
-   // - par[3]: bg constent
+   // - par[3]: bg constant
    // - par[4]: bg slope
 
    // limits.
    TF1::SetParLimits(0, 0, largesty * 2);
-   TF1::SetParLimits(1, xlow, xhigh);
+   TF1::SetParLimits(1, xlow+2., xhigh-2.);
    TF1::SetParLimits(2, 0, xhigh - xlow);
    // TF1::SetParLimits(3,0.0,40);
    // TF1::SetParLimits(4,0.01,5);
@@ -168,12 +174,12 @@ bool GGaus::InitParams(TH1* fithist)
    TF1::SetParameter(0, largesty);                // fithist->GetBinContent(bin));
    TF1::SetParameter(1, largestx);                // GetParameter("centroid"));
    TF1::SetParameter(2, (largestx * .01) / 2.35); // 2,(xhigh-xlow));     //2.0/binWidth); //
-   // TF1::SetParameter(3,5.);
-   // TF1::SetParameter(4,1.);
+   //TF1::SetParameter(3, offset_guess);
+   //TF1::SetParameter(4, slope_guess);
 
-   TF1::SetParError(0, 0.10 * largesty);
-   TF1::SetParError(1, 0.25);
-   TF1::SetParError(2, 0.10 * ((largestx * .01) / 2.35));
+   //TF1::SetParError(0, 0.10 * largesty);
+   //TF1::SetParError(1, 0.25);
+   //TF1::SetParError(2, 0.10 * ((largestx * .01) / 2.35));
    // TF1::SetParError(3,5);
    // TF1::SetParError(4,0.5);
 
@@ -196,37 +202,38 @@ Bool_t GGaus::Fit(TH1* fithist, Option_t* opt)
 
    bool verbose = !options.Contains("Q");
    bool noprint = options.Contains("no-print");
+   bool no_area = options.Contains("no-area");
    if(noprint) {
-      options.ReplaceAll("no-print", "");
+      options.ReplaceAll("no-print","");
+      verbose = false;
    }
+   if(no_area)
+     options.ReplaceAll("no-area","");
 
-   if(fithist->GetSumw2()->fN != fithist->GetNbinsX() + 2) {
+   if(fithist->GetSumw2()->fN != fithist->GetNbinsX() + 2)
       fithist->Sumw2();
-   }
-
-   TFitResultPtr fitres = fithist->Fit(this, Form("%sRSME", options.Data()));
-
-   // fitres.Get()->Print();
+   
+   TFitResultPtr fitres = fithist->Fit(this, Form("%sQRS+", options.Data()));
    if(!fitres.Get()->IsValid()) {
-      if(!verbose) {
-         printf(RED "fit has failed, trying refit... " RESET_COLOR);
-      }
-      // SetParameter(3,0.1);
-      // SetParameter(4,0.01);
-      // SetParameter(5,0.0);
-      fithist->GetListOfFunctions()->Last()->Delete();
-      fitres = fithist->Fit(this, Form("%sRSME", options.Data())); //,Form("%sRSM",options.Data()))
-      if(fitres.Get()->IsValid()) {
-         if(!verbose && !noprint) {
-            printf(DGREEN " refit passed!" RESET_COLOR "\n");
-         }
-      } else {
-         if(!verbose && !noprint) {
-            printf(DRED " refit also failed :( " RESET_COLOR "\n");
-         }
-      }
-   }
 
+     if(verbose)
+       printf(RED "fit has failed, trying refit... " RESET_COLOR);
+
+     fithist->GetListOfFunctions()->Last()->Delete();
+     fitres = fithist->Fit(this, Form("%sQRSME+", options.Data()));
+     
+     if(fitres.Get()->IsValid()) {
+       if(verbose && !noprint)
+	 printf(DGREEN " refit passed!" RESET_COLOR "\n");
+     }
+     else {
+       if(verbose && !noprint) 
+	 printf(DRED " refit also failed :( " RESET_COLOR "\n");
+     }
+   }
+   
+   fChi2 = fithist->Chisquare(this,"R");
+   
    // if(fitres->ParError(2) != fitres->ParError(2)) { // checks if nan.
    //  if(fitres->Parameter(3)<1) {
    //    FixParameter(4,0);
@@ -239,31 +246,29 @@ Bool_t GGaus::Fit(TH1* fithist, Option_t* opt)
 
    // TF1::Print();
 
-   // Double_t binwidth = fithist->GetBinWidth(GetParameter("centroid"));
-   // Double_t width    = TF1::GetParameter("sigma");
    Double_t xlow, xhigh;
-   // Double_t int_low,int_high;
    TF1::GetRange(xlow, xhigh);
-   // int_low  = xlow - 5.*width;
-   // int_high = xhigh +5.*width;
 
    // Make a function that does not include the background
    // Intgrate the background.
-   // GGaus *tmppeak = new GGaus;
-   // Copy(*tmppeak);
+   GGaus *tmppeak = new GGaus;
+   Copy(*tmppeak);
 
-   // tmppeak->SetParameter("bg_offset",0.0);
-   // tmppeak->SetRange(int_low,int_high);//This will help get the true area of the gaussian 200 ~ infinity in a gaus
-   // tmppeak->SetName("tmppeak");
+   tmppeak->SetParameter("bg_offset",0.0);
+   tmppeak->SetParameter("bg_slope",0.0);
+   tmppeak->SetRange(xlow,xhigh);//This will help get the true area of the gaussian 200 ~ infinity in a gaus
+   tmppeak->SetName("tmppeak");
 
-   // fArea = (tmppeak->Integral(int_low,int_high))/binwidth;
-   //  TMatrixDSym CovMat = fitres->GetCovarianceMatrix();
-   //  CovMat(6,6) = 0.0;
-   //  CovMat(7,7) = 0.0;
-   //  CovMat(8,8) = 0.0;
-   //  CovMat(9,9) = 0.0;
+   //fArea = (tmppeak->Integral(xlow,xhigh))/fithist->GetBinWidth(1);
+   TMatrixDSym CovMat = fitres->GetCovarianceMatrix();
+   CovMat(3,3) = 0.0;
+   CovMat(4,4) = 0.0;
 
-   //  fDArea = (tmppeak->IntegralError(int_low,int_high,tmppeak->GetParameters(),CovMat.GetMatrixArray()))/binwidth;
+   if(no_area)
+     fDArea = 0.0;
+   else
+     fDArea = tmppeak->IntegralError(xlow,xhigh,tmppeak->GetParameters(),
+				     CovMat.GetMatrixArray())/fithist->GetBinWidth(1);
 
    double bgpars[2];
    bgpars[0] = TF1::GetParameters()[3];
@@ -273,34 +278,33 @@ Bool_t GGaus::Fit(TH1* fithist, Option_t* opt)
    fBGFit.SetParameters(bgpars);
    // fithist->GetListOfFunctions()->Print();
 
-   fArea         = Integral(xlow, xhigh) / fithist->GetBinWidth(1);
-   double bgArea = fBGFit.Integral(xlow, xhigh) / fithist->GetBinWidth(1);
-   ;
-   fArea -= bgArea;
-
-   if(xlow > xhigh) {
-      std::swap(xlow, xhigh);
+   double bgArea = 0.0;
+   if(no_area)
+     fArea = 0.0;
+   else {
+     fArea         = Integral(xlow, xhigh) / fithist->GetBinWidth(1);
+     bgArea = fBGFit.Integral(xlow, xhigh) / fithist->GetBinWidth(1);
+     fArea -= bgArea;
    }
+   
+   if(xlow > xhigh)
+     std::swap(xlow, xhigh);
+   
    fSum = fithist->Integral(fithist->GetXaxis()->FindBin(xlow),
-                            fithist->GetXaxis()->FindBin(xhigh)); //* fithist->GetBinWidth(1);
-   printf("sum between markers: %02f\n", fSum);
+                            fithist->GetXaxis()->FindBin(xhigh));
+   if(!noprint)
+     printf(RESET_COLOR "\nsum between markers: %02f\n", fSum);
+   
    fDSum = TMath::Sqrt(fSum);
    fSum -= bgArea;
-   printf("sum after subtraction: %02f\n", fSum);
-
-   if(!verbose && !noprint) {
-      Print(); /*
-       printf("BG Area:         %.02f\n",bgArea);
-       printf("GetChisquared(): %.4f\n", TF1::GetChisquare());
-       printf("GetNDF():        %i\n",   TF1::GetNDF());
-       printf("GetProb():       %.4f\n", TF1::GetProb());*/
-      // TF1::Print();
-   }
-
-   Copy(*fithist->GetListOfFunctions()->FindObject(GetName()));
-   fithist->GetListOfFunctions()->Add(fBGFit.Clone());
-
-   // delete tmppeak;
+   if(!noprint && !no_area)
+     printf("sum after subtraction: %02f\n", fSum);
+   
+   if(verbose)
+     Print();
+   
+   fithist->GetListOfFunctions()->Add(Background());
+   
    return true;
 }
 
@@ -324,13 +328,14 @@ void GGaus::Print(Option_t* opt) const
 {
    TString options = opt;
    printf(GREEN);
-   printf("Name: %s \n", GetName());
+   printf("Name:      %s \n", GetName());
    printf("Centroid:  %1f +/- %1f \n", GetParameter("centroid"), GetParError(GetParNumber("centroid")));
-   printf("Area:      %1f +/- %1f \n", fArea, fDArea);
-   printf("Sum:       %1f +/- %1f \n", fSum, fDSum);
+   printf("Sigma:     %1f +/- %1f \n", GetParameter("sigma"), GetParError(GetParNumber("sigma")));
    printf("FWHM:      %1f +/- %1f \n", GetFWHM(), GetFWHMErr());
    printf("Reso:      %1f%%  \n", GetFWHM() / GetParameter("centroid") * 100.);
-   printf("Chi^2/NDF: %1f\n", fChi2 / fNdf);
+   printf("Area:      %1f +/- %1f \n", fArea, fDArea);
+   printf("Sum:       %1f +/- %1f \n", fSum, fDSum);
+   printf("Chi^2/NDF: %1f/%1f = %1f\n", fChi2, fNdf, fChi2/double(fNdf));
    if(options.Contains("all")) {
       TF1::Print(opt);
    }
