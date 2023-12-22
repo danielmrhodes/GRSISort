@@ -81,7 +81,7 @@ public:
 public:
    TDetectorHit(const int& Address = 0xffffffff);
    TDetectorHit(const TDetectorHit&, bool copywave = true);
-   // TDetectorHit(const TFragment& frag) { Class()->IgnoreTObjectStreamer(); this->CopyFragment(frag); }
+  //TDetectorHit(const TFragment& frag) { Class()->IgnoreTObjectStreamer(); this->CopyFragment(frag); }
    // void CopyFragment(const TFragment&);
    // void CopyWaveform(const TFragment&);
    ~TDetectorHit() override;

@@ -24,7 +24,7 @@ public:
 
    TSRIM();
    // looks like the emax-min inputs don't work right now for 94Sr and maybe other high mass nuclei
-   TSRIM(const char* infilename, double emax = -1.0, double emin = 0.0, bool printfile = true);
+   TSRIM(const char* infilename, double emax = -1.0, double emin = 0.0, bool printfile = false);
 
 private:
    std::vector<double> IonEnergy;
