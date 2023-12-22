@@ -25,7 +25,7 @@ class ThreadStatusFrame(ttk.Frame, object):
         super(ThreadStatusFrame,self).__init__(parent)
 
         self.thread_content = {}
-        self.after_idle(self._PeriodicThreadCheck)
+        #self.after_idle(self._PeriodicThreadCheck)
 
     def _setup_GUI(self):
         ttk.Separator(self, orient=tk.HORIZONTAL).grid(row=1, column=0, columnspan=10, sticky='ew')

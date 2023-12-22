@@ -165,7 +165,7 @@ class HistTab(object):
 
     def _PeriodicHistogramCheck(self):
         self.CheckOnlineHists()
-        self.main.window.after(1000, self._PeriodicHistogramCheck)
+        #self.main.window.after(1000, self._PeriodicHistogramCheck)
 
     def CheckOnlineHists(self):
         for tdir in self.active_dirs:
