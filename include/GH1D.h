@@ -58,6 +58,9 @@ public:
 
    static GH1D* ReadDatFile(const char* inFile, int nSkip = -1);
    static GH1D* ReadDatFileError(const char* inFile, int nSkip = -1);
+  
+  double FitEval(double* x,double* par);
+  TF1  *ConstructTF1() const; 
 
    GH1D* Project(int bins = -1);
 
