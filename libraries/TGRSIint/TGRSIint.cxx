@@ -522,10 +522,14 @@ void TGRSIint::SetupPipeline()
     TFile* tfile = OpenRootFile(filename);
     cut_files.push_back(tfile);
     std::cout << "loading cuts\n" << std::endl;
+    //AddFileToGUI(tfile);
+    /*
     if(tfile && GUIIsRunning()){
+      std::cout << "HERE" << std::endl;
       TPython::Bind(tfile,"tdir");
       ProcessLine("TPython::Exec(\"window.LoadCutFile(tdir)\");");
     }
+    */
   }
 
   // No need to set up all the loops if we are just opening the interpreter or viewing histograms
