@@ -189,6 +189,8 @@ public:
    static void SetUseCalFileIntegration(const std::string& mnemonic, bool flag, EPriority pr);
    bool UseCalFileIntegration() { return fUseCalFileInt.Value(); }
 
+   void SetENGCoeffs(std::vector<Float_t> new_coeffs);
+  
    std::vector<Float_t> GetENGCoeff() const { return fENGCoefficients.Value(); }
    std::vector<double>  GetCFDCoeff() const { return fCFDCoefficients.Value(); }
    std::vector<double>  GetLEDCoeff() const { return fLEDCoefficients.Value(); }

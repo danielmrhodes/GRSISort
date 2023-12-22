@@ -429,6 +429,15 @@ void TChannel::SetAddress(unsigned int tmpadd)
    fAddress = tmpadd;
 }
 
+void TChannel::SetENGCoeffs(std::vector<Float_t> coeffs) {
+
+  fENGCoefficients.Address()->clear();
+  for(Float_t c : coeffs)
+    fENGCoefficients.Address()->push_back(c);
+  
+  return;
+}
+
 void TChannel::DestroyENGCal()
 {
    /// Erases the ENGCoefficients vector
