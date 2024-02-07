@@ -27,8 +27,8 @@ const double beam_mass = 72582.36; //78Kr
 
 //MeV
 //const double beam_en = 278.8; //68Ge
-//const double beam_en = 331.5; //78Kr Aug 2023
-const double beam_en = 329.6; //78Kr Aug 2023 Pb Target
+const double beam_en = 331.5; //78Kr Aug 2023
+//const double beam_en = 329.6; //78Kr Aug 2023 Pb Target
 //const double beam_en = 429.0; //78Kr HE
 //const double beam_en = 296.4; //78Kr LE
 //const double beam_en = 340.6; //80Sr
